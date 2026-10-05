@@ -1,0 +1,15 @@
+# Entorno y cache
+venv/
+.venv/
+__pycache__/
+*.pyc
+.vscode/
+
+# Secretos
+.env
+
+# Datos personales y archivos subidos (NUNCA al repositorio)
+private/*
+!private/.gitkeep
+uploads/*
+!uploads/.gitkeep

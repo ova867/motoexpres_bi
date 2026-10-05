@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block titulo_pagina %}Modelo de datos · MotoExpres BI{% endblock %}
+{% block titulo %}Modelo de datos{% endblock %}
+
+{% block contenido %}
+<div class="banner">
+  <span class="banner-tag">Hito 1 · E4</span>
+</div>
+
+{% set c = d.conteos if d else None %}
+{% set h = d.huerfanos if d else None %}
+<div class="rejilla-modelo">
+  <div class="panel">
+    <h3>Modelo de estrella</h3>
+    <p class="sub">Granularidad: <strong>una fila = una orden</strong></p>
+    <svg class="estrella" viewBox="0 0 700 330" role="img" aria-label="Esquema de estrella de MotoExpres">
+      <g class="enlace">
+        <line x1="180" y1="62" x2="225" y2="110"/>
+        <line x1="520" y1="62" x2="475" y2="110"/>
+        <line x1="180" y1="268" x2="225" y2="240"/>
+        <line x1="520" y1="268" x2="475" y2="240"/>
+      </g>
+
+      <g class="dim-caja"><rect x="30" y="20" width="150" height="62" rx="6"/>
+        <text class="t-nombre" x="45" y="46">dim_tiempo</text>
+        <text class="t-sub" x="45" y="66">{{ c.dim_tiempo | miles if c else '–' }} filas</text></g>
+
+      <g class="dim-caja"><rect x="520" y="20" width="150" height="62" rx="6"/>
+        <text class="t-nombre" x="535" y="46">dim_cliente</text>
+        <text class="t-sub" x="535" y="66">{{ c.dim_cliente | miles if c else '–' }} filas</text></g>
+
+      <g class="dim-caja"><rect x="30" y="250" width="150" height="62" rx="6"/>
+        <text class="t-nombre" x="45" y="276">dim_servicio</text>
+        <text class="t-sub" x="45" y="296">{{ c.dim_servicio | miles if c else '–' }} filas + «Sin servicio» (−1)</text></g>
+
+      <g class="dim-caja"><rect x="520" y="250" width="150" height="62" rx="6"/>
+        <text class="t-nombre" x="535" y="276">dim_centro</text>
+        <text class="t-sub" x="535" y="296">{{ c.dim_centro | miles if c else '–' }} filas</text></g>
+
+      <g class="hecho-caja">
+        <rect x="225" y="80" width="250" height="195" rx="7" class="cuerpo"/>
+        <path d="M225 87a7 7 0 0 1 7-7h236a7 7 0 0 1 7 7v23H225z" class="cabecera"/>
+        <text class="t-hecho" x="240" y="101">fact_ordenes</text>
+        <text class="t-campo" x="240" y="131">orden_id</text>
+        <text class="t-campo" x="240" y="148">fecha_id</text>
+        <text class="t-campo" x="240" y="165">cliente_id</text>
+        <text class="t-campo" x="240" y="182">servicio_id</text>
+        <text class="t-campo" x="240" y="199">centro_id</text>
+        <text class="t-campo" x="240" y="216">precio · costo</text>
+        <text class="t-campo" x="240" y="233">peso_kg · distancia_km</text>
+        <text class="t-campo" x="240" y="250">estado · horas_reales</text>
+        <text class="t-campo tenue" x="240" y="267">marcas</text>
+      </g>
+    </svg>
+    {% if c %}<p class="nota"><span class="mono">fact_ordenes</span>: <strong class="mono">{{ c.fact_ordenes | miles }}</strong> órdenes cargadas.</p>{% endif %}
+  </div>
+
+  <div class="panel">
+    <h3>Integridad</h3>
+    <p class="sub">Revisión de llaves después de cargar</p>
+    <table class="tabla">
+      <thead><tr><th>Relación</th><th class="num">Huérfanos</th></tr></thead>
+      <tbody>
+      {% if h %}
+        {% for nombre, clave in [('orden → cliente','cliente'), ('orden → servicio','servicio'), ('orden → centro','centro'), ('orden → fecha','fecha')] %}
+        <tr>
+          <td>{{ nombre }}</td>
+          <td class="mono num {{ 'verde-t' if h[clave] == 0 else 'rojo-t' }}">{{ h[clave] | miles }}{% if clave == 'servicio' and c and c.sin_servicio > 0 and h[clave] == 0 %} <span class="ambar-t">*</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr class="vacio"><td colspan="2">Sin datos todavía.</td></tr>
+      {% endif %}
+      </tbody>
+    </table>
+    {% if c and c.sin_servicio > 0 %}
+    <p class="nota">* Las {{ c.sin_servicio | miles }} órdenes sin servicio van a un miembro "Sin servicio" (servicio_id = −1) en lugar de borrarse.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

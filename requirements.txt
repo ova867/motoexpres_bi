@@ -1,0 +1,7 @@
+# Compatible con Python 3.12
+Flask>=3.0,<4
+psycopg2-binary>=2.9.9
+pandas>=2.2,<3
+openpyxl>=3.1.2
+python-calamine>=0.2.0   # lector de Excel mucho mas rapido; si falta, se usa openpyxl
+python-dotenv>=1.0

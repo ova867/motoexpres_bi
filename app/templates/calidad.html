@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block titulo_pagina %}Calidad de los datos · MotoExpres BI{% endblock %}
+{% block titulo %}Calidad de los datos{% endblock %}
+
+{% block contenido %}
+<div class="banner">
+  <span class="banner-tag">Hito 1 · E2</span>
+</div>
+
+{% set diag = d.diag if d else None %}
+{% if d and not diag %}
+<div class="panel vacio-panel">Todavía no hay diagnóstico. Vaya a <a href="{{ url_for('views.carga') }}">Carga de datos</a> y presione "Ejecutar carga".</div>
+{% endif %}
+
+<div class="kpis">
+  <div class="kpi"><div class="kpi-t">REGLAS REVISADAS</div><div class="kpi-v">{{ diag.n_reglas if diag else '–' }}</div><div class="kpi-s">en {{ diag.n_dimensiones if diag else '–' }} dimensiones</div></div>
+  <div class="kpi"><div class="kpi-t">FILAS CON PROBLEMA</div><div class="kpi-v">{{ (diag.filas_con_problema | miles) if diag else '–' }}</div><div class="kpi-s">sin contar los vacíos legítimos</div></div>
+  <div class="kpi"><div class="kpi-t">VACÍOS LEGÍTIMOS</div><div class="kpi-v">{{ (diag.vacios_legitimos | miles) if diag else '–' }}</div><div class="kpi-s">horas_reales en no entregadas</div></div>
+  <div class="kpi"><div class="kpi-t">EN CUARENTENA</div><div class="kpi-v">{{ (d.cuarentena | miles) if d else '–' }}</div><div class="kpi-s">filas guardadas aparte, no borradas</div></div>
+</div>
+
+<div class="panel">
+  <h3>Diagnóstico</h3>
+  <p class="sub">Conteos sobre el archivo original, antes de quitar duplicados</p>
+  <div class="scroll-x">
+  <table class="tabla">
+    <thead><tr><th>Dimensión</th><th>Tabla</th><th>Regla</th><th class="num">Filas</th><th>Decisión</th></tr></thead>
+    <tbody>
+    {% if diag %}
+      {% for r in diag.reglas %}
+      <tr class="{{ 'trampa' if r.decision == 'NO tocar' }}">
+        <td>{{ r.dimension }}</td>
+        <td class="mono">{{ r.tabla }}</td>
+        <td>{{ r.regla }}{% if r.nota %}<div class="nota-regla">{{ r.nota }}</div>{% endif %}</td>
+        <td class="mono num">{{ (r.filas | miles) if r.filas is not none else '–' }}</td>
+        <td><span class="chip {{ r.chip }}">{{ r.decision }}</span></td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr class="vacio"><td colspan="5">Sin datos todavía.</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="rejilla-2">
+  <div class="panel">
+    <h3>estado: antes y después</h3>
+    <p class="sub">Verificar el resultado, no solo el conteo</p>
+    <table class="tabla">
+      <thead><tr><th>Valor original</th><th>Queda como</th></tr></thead>
+      <tbody>
+      {% if diag %}
+        {% for e in diag.estado_antes_despues %}
+        <tr>
+          <td class="mono">{{ e.originales | join(' · ') }}</td>
+          <td><strong>{{ e.queda }}</strong></td>
+        </tr>
+        {% endfor %}
+      {% else %}<tr class="vacio"><td colspan="2">Sin datos todavía.</td></tr>{% endif %}
+      </tbody>
+    </table>
+    <p class="nota">Ojo: INITCAP convierte "En tránsito" en "En Tránsito". Por eso se usa una tabla de equivalencias.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Reglas por dimensión</h3>
+    <p class="sub">DAMA-DMBOK, Encuentro 2</p>
+    {% if diag %}
+    {% set maximo = diag.reglas_por_dimension.values() | max %}
+    <div class="barras">
+      {% for dim, n in diag.reglas_por_dimension.items() %}
+      <div class="barra-fila">
+        <span class="barra-etq">{{ dim }}</span>
+        <span class="barra-trazo" style="width: {{ (n / maximo * 78) | round(1) }}%"></span>
+        <span class="barra-n">{{ n }} {{ 'regla' if n == 1 else 'reglas' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<p class="vacio-texto">Sin datos todavía.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

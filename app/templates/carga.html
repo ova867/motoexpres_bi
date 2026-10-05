@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block titulo_pagina %}Carga de datos · MotoExpres BI{% endblock %}
+{% block titulo %}Carga de datos{% endblock %}
+
+{% block contenido %}
+<div class="banner">
+  <span class="banner-tag">Hito 1 · E5</span>
+</div>
+
+<div class="panel">
+  <div class="panel-cabecera">
+    <div>
+      <h3>Proceso de carga</h3>
+      <p class="sub" id="origen">Origen: {{ d.archivo if d and d.archivo else 'ningún archivo cargado todavía' }} · destino: PostgreSQL</p>
+    </div>
+    <div class="acciones">
+      <button type="button" class="btn primario" id="btn-ejecutar">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20"/></svg> Ejecutar carga
+      </button>
+      <button type="button" class="btn secundario" id="btn-reiniciar">Reiniciar base</button>
+    </div>
+  </div>
+
+  <div class="zona-archivo" id="zona-archivo">
+    <input type="file" id="archivo" accept=".xlsx,.csv" hidden>
+    <button type="button" class="btn secundario chico" id="btn-elegir">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Seleccionar archivo (.xlsx / .csv)
+    </button>
+    <span class="nombre-archivo" id="nombre-archivo">Arrastre aquí su archivo o selecciónelo.</code>.</span>
+    <button type="button" class="btn-x" id="btn-quitar" hidden title="Quitar archivo">✕</button>
+  </div>
+
+  {% set titulos = ['1 · EXTRAER', '2 · VALIDAR', '3 · TRANSFORMAR', '4 · PROTEGER', '5 · CARGAR'] %}
+  <div class="pasos" id="pasos">
+    {% for t in titulos %}
+    {% set tar = d.tarjetas[loop.index0] if d and d.tarjetas else None %}
+    <div class="paso" data-paso="{{ loop.index }}">
+      <div class="paso-titulo">{{ t }}</div>
+      <div class="paso-valor">{{ tar.valor if tar else '–' }}</div>
+      <div class="paso-texto">{{ tar.texto if tar else 'pendiente' }}</div>
+      <div class="barra"><div class="barra-relleno {{ 'hecho' if tar }}"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="mensaje-estado" id="mensaje-estado" hidden></div>
+</div>
+
+<div class="rejilla-2-1">
+  <div class="panel">
+    <h3>Historial de ejecuciones</h3>
+    <p class="sub">Si la segunda ejecución cambia el total, el programa duplica</p>
+    <table class="tabla">
+      <thead><tr><th>#</th><th>Hora</th><th class="num">Nuevas</th><th class="num">Total en la base</th><th>Doble carga</th></tr></thead>
+      <tbody id="historial">
+        {% if d and d.historial %}
+          {% for h in d.historial %}
+          <tr>
+            <td class="mono">{{ h.id }}</td>
+            <td class="mono">{{ h.hora }}</td>
+            <td class="mono num">{{ h.filas_nuevas | miles }}</td>
+            <td class="mono num">{{ h.total_en_base | miles }}</td>
+            <td>
+              {% if h.doble_carga == 'no_duplico' %}<span class="chip verde">✓ no duplicó</span>
+              {% elif h.doble_carga == 'primera' %}<span class="chip gris">primera</span>
+              {% else %}<span class="chip ambar">+{{ h.filas_nuevas | miles }} nuevas</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr class="vacio"><td colspan="5">Aún no hay ejecuciones. Presione "Ejecutar carga".</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <div class="terminal" id="terminal" aria-live="polite"></div>
+    <script type="application/json" id="logs-iniciales">{{ (d.logs if d else '') | tojson }}</script>
+  </div>
+
+  <div class="panel">
+    <h3>Filas que no se cargaron</h3>
+    <p class="sub">Todo lo que se descarta queda contado y con motivo</p>
+    <table class="tabla">
+      <thead><tr><th>Motivo</th><th class="num">Filas</th><th>Destino</th></tr></thead>
+      <tbody id="descartes">
+        {% if d and d.descartes %}
+          {% for x in d.descartes %}
+          <tr>
+            <td>{{ x.motivo }}</td>
+            <td class="mono num">{{ x.filas | miles }}</td>
+            <td><span class="chip {{ x.chip }}">{{ x.destino }}</span></td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr class="vacio"><td colspan="3">Se llena después de la primera carga.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <p class="nota">La cuarentena es una tabla aparte (<code>stg_rechazos</code>): nada se borra sin dejar rastro.
+      Hoy hay <strong class="mono" id="cuarentena-total">{{ (d.cuarentena if d else 0) | miles }}</strong> filas en ella.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>MotoExpres.initCarga();</script>
+{% endblock %}

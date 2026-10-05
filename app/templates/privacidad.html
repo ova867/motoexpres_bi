@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block titulo_pagina %}Privacidad · MotoExpres BI{% endblock %}
+{% block titulo %}Privacidad{% endblock %}
+
+{% block contenido %}
+<div class="banner">
+  <span class="banner-tag">Hito 1 · E3</span>
+</div>
+
+{% set a = d.antes if d else None %}
+{% set p = d.despues if d else None %}
+{% if d and not a and not p %}
+<div class="panel vacio-panel">Todavía no hay medición. Vaya a <a href="{{ url_for('views.carga') }}">Carga de datos</a> y ejecute la carga con el archivo completo (.xlsx).</div>
+{% endif %}
+
+<div class="rejilla-2">
+  <div class="panel">
+    <h3>Antes de generalizar</h3>
+    <p class="sub">región + ciudad + sector + segmento</p>
+    {% if a %}
+    <div class="k-linea">
+      <span class="k-num rojo">k = {{ a.k }}</span>
+      <div class="k-pista"><div class="k-barra rojo" style="width: {{ d.barra_antes.ancho }}%"></div><div class="k-meta" style="left: {{ d.barra_antes.meta }}%"></div></div>
+    </div>
+    <p class="k-texto"><strong class="rojo-t">{{ a.unicos | miles }} de {{ a.total | miles }}</strong> clientes son únicos: se pueden reconocer con un solo dato externo.</p>
+    {% else %}<p class="vacio-texto">Sin datos todavía.</p>{% endif %}
+  </div>
+
+  <div class="panel">
+    <h3>Después de generalizar</h3>
+    <p class="sub">región + segmento</p>
+    {% if p %}
+    {% set ok = p.k >= d.meta %}
+    <div class="k-linea">
+      <span class="k-num {{ 'verde' if ok else 'rojo' }}">k = {{ p.k }}</span>
+      <div class="k-pista"><div class="k-barra {{ 'verde' if ok else 'rojo' }}" style="width: {{ d.barra_despues.ancho }}%"></div><div class="k-meta" style="left: {{ d.barra_despues.meta }}%"></div></div>
+    </div>
+    <p class="k-texto">
+      <strong class="{{ 'verde-t' if ok else 'rojo-t' }}">{{ p.unicos | miles }} únicos.</strong>
+      {% if ok %}Meta cumplida.{% else %}Meta NO cumplida (se pide k ≥ {{ d.meta }}).{% endif %}
+      Lo que se perdió: ya no se puede analizar por ciudad ni por sector a nivel de cliente.
+    </p>
+    {% if p.k_con_anio is defined and p.k_con_anio < p.k %}
+    <p class="nota">Transparencia: <code>anio_alta</code> se conserva como año (generalizado), pero si se usara como cuasi-identificador junto a región y segmento, k bajaría a {{ p.k_con_anio }}. La medición del curso es región + segmento.</p>
+    {% endif %}
+    {% else %}<p class="vacio-texto">Sin datos todavía.</p>{% endif %}
+  </div>
+</div>
+
+<div class="panel">
+  <h3>Clasificación de columnas</h3>
+  <p class="sub">dim_cliente · qué se hizo con cada una</p>
+  <table class="tabla">
+    <thead><tr><th>Columna</th><th>Tipo</th><th>Acción</th></tr></thead>
+    <tbody>
+      {% if d %}{% for c in d.columnas %}
+      <tr>
+        <td class="mono">{{ c.columna }}</td>
+        <td>{% if c.tipo == 'directo' %}<span class="chip rojo">Identificador directo</span>{% else %}<span class="chip ambar">Cuasi-identificador</span>{% endif %}</td>
+        <td>{{ c.accion }}</td>
+      </tr>
+      {% endfor %}{% endif %}
+    </tbody>
+  </table>
+  <p class="nota">Seudonimizar el NIT con hash permite unir tablas sin mostrar el dato. No es anonimizar: con la tabla de equivalencias se revierte, así que esa tabla no se sube al repositorio (queda en <code>private/</code>, ignorada por Git).</p>
+</div>
+{% endblock %}

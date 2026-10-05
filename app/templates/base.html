@@ -1,0 +1,76 @@
+{% macro icono(nombre) -%}
+<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{%- if nombre == 'download' %}<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+{%- elif nombre == 'calidad' %}<circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/>
+{%- elif nombre == 'lock' %}<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+{%- elif nombre == 'modelo' %}<circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 7l10 10M17 7L7 17"/>
+{%- elif nombre == 'tablero' %}<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+{%- elif nombre == 'explorar' %}<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+{%- elif nombre == 'alertas' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+{%- elif nombre == 'accesos' %}<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+{%- elif nombre == 'historia' %}<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+{%- elif nombre == 'bitacora' %}<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+{%- endif %}</svg>
+{%- endmacro %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo_pagina %}MotoExpres BI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="marca">
+    <div class="marca-nombre">MotoExpres BI</div>
+    <div class="marca-sub">Proyecto integrador · 251G8F</div>
+  </div>
+
+  <nav>
+    <div class="grupo"><span>HITO 1 · LOS DATOS</span><span class="cod">E5</span></div>
+    <a class="nav-item {{ 'activo' if activo == 'carga' }}" href="{{ url_for('views.carga') }}">{{ icono('download') }}Carga de datos</a>
+    <a class="nav-item {{ 'activo' if activo == 'calidad' }}" href="{{ url_for('views.calidad') }}">{{ icono('calidad') }}Calidad</a>
+    <a class="nav-item {{ 'activo' if activo == 'privacidad' }}" href="{{ url_for('views.privacidad') }}">{{ icono('lock') }}Privacidad</a>
+    <a class="nav-item {{ 'activo' if activo == 'modelo' }}" href="{{ url_for('views.modelo') }}">{{ icono('modelo') }}Modelo</a>
+
+    <div class="grupo"><span>HITO 2 · LO FUNCIONAL</span><span class="cod">E10</span></div>
+    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('tablero') }}Tablero</a>
+    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('explorar') }}Explorar</a>
+    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('alertas') }}Alertas</a>
+    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('accesos') }}Accesos</a>
+
+    <div class="grupo"><span>HITO 3 · EL PRODUCTO</span><span class="cod">E16</span></div>
+    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 3">{{ icono('historia') }}Historia</a>
+    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 3">{{ icono('bitacora') }}Bitácora IA</a>
+  </nav>
+</aside>
+
+<main class="principal">
+  <header class="topbar">
+    <div>
+      <h1>{% block titulo %}{% endblock %}</h1>
+      <p class="migas">MotoExpres BI · Hito 1 · Los datos (E5)</p>
+    </div>
+    
+    <div></div>
+  </header>
+
+  <section class="contenido">
+    {% if error_bd %}
+    <div class="alerta-error">
+      <strong>No se pudo consultar PostgreSQL.</strong>
+      Revise el archivo <code>.env</code>, que el servidor esté encendido y que exista la base <code>motoexpres_bi</code>.
+      <div class="detalle">{{ error_bd }}</div>
+    </div>
+    {% endif %}
+    {% block contenido %}{% endblock %}
+  </section>
+</main>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
