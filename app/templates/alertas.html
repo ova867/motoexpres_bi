@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block titulo_pagina %}Alertas · MotoExpres BI{% endblock %}
+{% block titulo %}Alertas{% endblock %}
+{% block migas %}MotoExpres BI · Hito 2 · Lo funcional (E10){% endblock %}
+
+{% block contenido %}
+<!-- Banner Nota del Curso -->
+<div id="banner-notas-curso" class="banner banner-curso">
+  <span class="banner-tag">Hito 2 · E11</span>
+  <span>
+    El sistema avisa solo cuando un mes se sale de lo normal (|z| &gt; 2). Pero una alerta es una pregunta, no una conclusión: con {{ d.total_meses }} meses en la base de datos y varios indicadores, algunas alertas saldrán por azar.
+  </span>
+</div>
+
+<!-- Panel Principal: Gráfico de Órdenes por mes -->
+<div class="panel grafico-panel" style="margin-top: 18px;">
+  <div class="panel-cabecera">
+    <div>
+      <h3>Órdenes por mes</h3>
+      <p class="sub">En rojo, el mes que disparó la alerta</p>
+    </div>
+  </div>
+  <div class="canvas-wrap" style="height: 310px; position: relative;">
+    <canvas id="chart-ordenes-alertas"></canvas>
+  </div>
+</div>
+
+<!-- Lista de las 3 Alertas Formales -->
+<div class="lista-alertas-oficiales" style="margin-top: 20px;">
+  {% for a in d.alertas %}
+  <div class="tarjeta-alerta-oficial {{ a.color }}">
+    <div class="alerta-cuerpo">
+      <h4 class="alerta-titulo">{{ a.titulo }}</h4>
+      <p class="alerta-desc">{{ a.descripcion }}</p>
+    </div>
+    <div class="alerta-tag-wrap">
+      <span class="chip-alerta mono {{ a.color }}">{{ a.badge }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="datos-alertas" type="application/json">
+  {{ d | tojson }}
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.MotoAnalytics) {
+      window.MotoAnalytics.initAlertasExacto();
+    }
+  });
+</script>
+{% endblock %}

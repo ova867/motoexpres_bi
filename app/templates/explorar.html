@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block titulo_pagina %}Explorar · MotoExpres BI{% endblock %}
+{% block titulo %}Explorar{% endblock %}
+{% block migas %}MotoExpres BI · Hito 2 · Lo funcional (E10){% endblock %}
+
+{% block topbar_extra %}
+<button id="btn-modo-clase" type="button" class="btn primario chico btn-modo-clase" onclick="window.MotoAnalytics && window.MotoAnalytics.toggleModoClase()">
+  ▶ Modo clase
+</button>
+{% endblock %}
+
+{% block contenido %}
+<!-- Panel Selector de Región (Tabs de navegación regional) -->
+<section class="panel panel-selector-region">
+  <div class="panel-cabecera">
+    <div>
+      <h3 style="font-size:16px;">Región</h3>
+      <p class="sub" style="margin-bottom:0;">Elija una región para ver su mezcla de servicios</p>
+    </div>
+    <div class="tabs-regiones" id="tabs-regiones">
+      {% for r in d.regiones_disponibles %}
+      <button type="button" class="btn-tab-region {{ 'activo' if d.region_activa == r else '' }}" onclick="window.location.href='{{ url_for('views.explorar') }}?region={{ r }}'">
+        {{ r }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Nivel Superior: 4 Scorecards Regionales -->
+<div class="rejilla-scorecards-4" style="margin-top:18px;">
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">INGRESOS</div>
+    <div class="scorecard-valor-grande mono">{{ d.kpis.ingresos }}</div>
+    <div class="scorecard-subtexto">{{ d.kpis.region }}</div>
+  </div>
+
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">ÓRDENES</div>
+    <div class="scorecard-valor-grande mono">{{ d.kpis.ordenes }}</div>
+    <div class="scorecard-subtexto">&nbsp;</div>
+  </div>
+
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">TICKET PROMEDIO</div>
+    <div class="scorecard-valor-grande mono">{{ d.kpis.ticket_promedio }}</div>
+    <div class="scorecard-subtexto">ingreso / orden</div>
+  </div>
+
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">MARGEN</div>
+    <div class="scorecard-valor-grande mono">{{ d.kpis.margen }}</div>
+    <div class="scorecard-subtexto">&nbsp;</div>
+  </div>
+</div>
+
+<!-- Nivel Inferior: Servicios en la Región y Participación de cada servicio -->
+<div class="rejilla-2" style="margin-top: 18px;">
+  <!-- Gráfico de Servicios en la Región -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Servicios en {{ d.region_activa }}</h3>
+        <p class="sub">Millones</p>
+      </div>
+    </div>
+
+    <div class="lista-barras-horizontales">
+      {% for s in d.servicios_grafico %}
+      <div class="item-barra-h">
+        <span class="nombre-barra-h">{{ s.tipo_servicio }}</span>
+        <div class="pista-barra-h">
+          <div class="relleno-barra-h region" style="width: {{ s.pct_barra }}%;"></div>
+        </div>
+        <span class="valor-barra-h mono">{{ s.texto }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Tabla Participación de cada servicio -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Participación de cada servicio</h3>
+        <p class="sub">Comparado con el promedio de las 5 regiones</p>
+      </div>
+    </div>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>SERVICIO</th>
+          <th class="num">{{ d.region_activa | upper }}</th>
+          <th class="num">PROMEDIO</th>
+          <th class="num">DIF.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in d.tabla_participacion %}
+        <tr>
+          <td>{{ row.servicio }}</td>
+          <td class="mono num">{{ row.region_pct }}</td>
+          <td class="mono num">{{ row.promedio_pct }}</td>
+          <td class="mono num {{ 'verde' if row.es_positiva else 'rojo' }}">{{ row.dif }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.MotoAnalytics) {
+      window.MotoAnalytics.initExplorarExacto();
+    }
+  });
+</script>
+{% endblock %}

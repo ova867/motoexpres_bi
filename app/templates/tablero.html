@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block titulo_pagina %}Tablero · MotoExpres BI{% endblock %}
+{% block titulo %}Tablero{% endblock %}
+{% block migas %}MotoExpres BI · Hito 2 · Lo funcional (E10){% endblock %}
+
+{% block contenido %}
+<!-- Banner Nota del Curso (controlado por el checkbox "Notas del curso") -->
+<div id="banner-notas-curso" class="banner banner-curso">
+  <span class="banner-tag">Hito 2 · E7-E9</span>
+  <span>
+    Pirámide invertida: arriba lo que se decide en tres segundos (KPI), en el medio la tendencia y abajo el detalle.
+    Los valores salen de los datos limpios del proyecto: si el equipo no quitó duplicados ni convirtió los precios en texto, sus números no van a coincidir.
+  </span>
+</div>
+
+<!-- Nivel Superior: 4 Scorecards Principales -->
+<div class="rejilla-scorecards-4">
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">INGRESOS 2022-2025</div>
+    <div class="scorecard-valor-grande mono" id="kpi-ingresos">{{ d.kpis.ingresos }}</div>
+    <div class="scorecard-subtexto" id="kpi-ingresos-sub">{{ d.kpis.ingresos_sub }}</div>
+  </div>
+
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">ÓRDENES</div>
+    <div class="scorecard-valor-grande mono" id="kpi-ordenes">{{ d.kpis.ordenes }}</div>
+    <div class="scorecard-subtexto" id="kpi-ordenes-sub">{{ d.kpis.ordenes_sub }}</div>
+  </div>
+
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">MARGEN</div>
+    <div class="scorecard-valor-grande mono" id="kpi-margen">{{ d.kpis.margen }}</div>
+    <div class="scorecard-subtexto" id="kpi-margen-sub">{{ d.kpis.margen_sub }}</div>
+  </div>
+
+  <div class="scorecard">
+    <div class="scorecard-titulo-top">ENTREGAS A TIEMPO</div>
+    <div class="scorecard-valor-grande mono" id="kpi-tiempo">{{ d.kpis.entregas_a_tiempo }}</div>
+    <div class="scorecard-subtexto" id="kpi-tiempo-sub">{{ d.kpis.entregas_a_tiempo_sub }}</div>
+  </div>
+</div>
+
+<!-- Nivel Medio: Ingresos por mes y Por servicio -->
+<div class="rejilla-2" style="margin-top: 18px;">
+  <!-- Gráfico Ingresos por mes -->
+  <div class="panel grafico-panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Ingresos por mes</h3>
+        <p class="sub">{{ d.subtitulo_meses }}</p>
+      </div>
+    </div>
+    <div class="canvas-wrap" style="height: 290px; position: relative;">
+      <canvas id="chart-ingresos-mes"></canvas>
+    </div>
+  </div>
+
+  <!-- Gráfico Por servicio -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Por servicio</h3>
+        <p class="sub">Ingresos acumulados, millones</p>
+      </div>
+    </div>
+    
+    <div class="lista-barras-horizontales" id="lista-servicios-tablero">
+      {% for s in d.servicios %}
+      <div class="item-barra-h">
+        <span class="nombre-barra-h">{{ s.tipo_servicio }}</span>
+        <div class="pista-barra-h">
+          <div class="relleno-barra-h servicio" style="width: {{ s.pct_barra }}%;"></div>
+        </div>
+        <span class="valor-barra-h mono">{{ s.texto }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Nivel Inferior: Por región y 2025 frente a 2024 -->
+<div class="rejilla-2" style="margin-top: 18px;">
+  <!-- Gráfico Por región -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Por región</h3>
+        <p class="sub">Clic en una barra para bajar al detalle en Explorar</p>
+      </div>
+    </div>
+
+    <div class="lista-barras-horizontales" id="lista-regiones-tablero">
+      {% for r in d.regiones %}
+      <div class="item-barra-h interactivo" onclick="window.location.href='{{ url_for('views.explorar') }}?region={{ r.region }}'" title="Ver detalle de {{ r.region }} en Explorar">
+        <span class="nombre-barra-h">{{ r.region }}</span>
+        <div class="pista-barra-h">
+          <div class="relleno-barra-h region" style="width: {{ r.pct_barra }}%;"></div>
+        </div>
+        <span class="valor-barra-h mono">{{ r.texto }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Tabla 2025 frente a 2024 -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>{{ d.anio_actual }} frente a {{ d.anio_anterior }}</h3>
+        <p class="sub">La comparación cambia según cómo se trate el pico atípico</p>
+      </div>
+    </div>
+
+    <table class="tabla tabla-comparacion">
+      <thead>
+        <tr>
+          <th>CÁLCULO</th>
+          <th class="num">{{ d.anio_anterior }}</th>
+          <th class="num">VARIACIÓN {{ d.anio_actual }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in d.comparacion_anios %}
+        <tr class="{{ 'fila-destacada-ambar' if row.destacado else '' }}">
+          <td>{{ row.calculo }}</td>
+          <td class="mono num">{{ row.anio_anterior_val }}</td>
+          <td class="mono num {{ 'rojo' if '-' in row.variacion_actual else 'verde' }}">{{ row.variacion_actual }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="nota">Un tablero honesto muestra las dos filas y dice cuál usa.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="datos-tablero" type="application/json">
+  {{ d | tojson }}
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.MotoAnalytics) {
+      window.MotoAnalytics.initTableroExacto();
+    }
+  });
+</script>
+{% endblock %}

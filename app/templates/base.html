@@ -38,10 +38,10 @@
     <a class="nav-item {{ 'activo' if activo == 'modelo' }}" href="{{ url_for('views.modelo') }}">{{ icono('modelo') }}Modelo</a>
 
     <div class="grupo"><span>HITO 2 · LO FUNCIONAL</span><span class="cod">E10</span></div>
-    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('tablero') }}Tablero</a>
-    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('explorar') }}Explorar</a>
-    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('alertas') }}Alertas</a>
-    <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 2">{{ icono('accesos') }}Accesos</a>
+    <a class="nav-item {{ 'activo' if activo == 'tablero' }}" href="{{ url_for('views.tablero') }}">{{ icono('tablero') }}Tablero</a>
+    <a class="nav-item {{ 'activo' if activo == 'explorar' }}" href="{{ url_for('views.explorar') }}">{{ icono('explorar') }}Explorar</a>
+    <a class="nav-item {{ 'activo' if activo == 'alertas' }}" href="{{ url_for('views.alertas') }}">{{ icono('alertas') }}Alertas</a>
+    <a class="nav-item {{ 'activo' if activo == 'accesos' }}" href="{{ url_for('views.accesos') }}">{{ icono('accesos') }}Accesos</a>
 
     <div class="grupo"><span>HITO 3 · EL PRODUCTO</span><span class="cod">E16</span></div>
     <a class="nav-item deshabilitado" href="#" aria-disabled="true" title="Disponible en el Hito 3">{{ icono('historia') }}Historia</a>
@@ -53,10 +53,32 @@
   <header class="topbar">
     <div>
       <h1>{% block titulo %}{% endblock %}</h1>
-      <p class="migas">MotoExpres BI · Hito 1 · Los datos (E5)</p>
+      <p class="migas">{% block migas %}MotoExpres BI · Hito 2 · Lo funcional (E10){% endblock %}</p>
     </div>
     
-    <div></div>
+    <div class="topbar-acciones">
+      <div class="switch-app">
+        <button type="button" class="btn-app activo">MotoExpres</button>
+        <button type="button" class="btn-app">NovaApp</button>
+      </div>
+
+      <div class="perfil-selector-wrap">
+        <label for="selector-ver-como" class="perfil-label">Ver como:</label>
+        <select id="selector-ver-como" class="select-perfil" title="Control de acceso y perfil de visualización">
+          <option value="gerencia">Gerencia (todo)</option>
+          {% for r in regiones_sistema %}
+          <option value="{{ r }}">Regional {{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <label class="check-notas-wrap">
+        <input type="checkbox" id="check-notas-curso" checked>
+        <span>Notas del curso</span>
+      </label>
+
+      {% block topbar_extra %}{% endblock %}
+    </div>
   </header>
 
   <section class="contenido">
@@ -71,6 +93,8 @@
   </section>
 </main>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

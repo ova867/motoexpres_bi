@@ -68,3 +68,60 @@ def modelo():
         return {"conteos": consultas.conteos_modelo(), "huerfanos": consultas.huerfanos()}
     datos, error = _intentar(cargar)
     return render_template("modelo.html", activo="modelo", d=datos, error_bd=error)
+
+
+@bp.route("/tablero")
+def tablero():
+    def cargar():
+        from app.services import analytics_service as asvc
+        from flask import request
+        region = request.args.get("region")
+        if region in ("gerencia", "todos", "all", ""):
+            region = None
+        asvc.registrar_acceso(
+            pantalla="Tablero",
+            usuario="lgomez" if region else "gerencia",
+            rol=f"Gerente regional · {region}" if region else "Gerencia general",
+            region=region,
+        )
+        return asvc.obtener_datos_tablero(region=region)
+    datos, error = _intentar(cargar)
+    return render_template("tablero.html", activo="tablero", d=datos, error_bd=error)
+
+
+@bp.route("/explorar")
+def explorar():
+    def cargar():
+        from app.services import analytics_service as asvc
+        from flask import request
+        region = request.args.get("region")
+        asvc.registrar_acceso(
+            pantalla="Explorar",
+            usuario="lgomez" if region else "gerencia",
+            rol=f"Gerente regional · {region}" if region else "Gerencia general",
+            region=region,
+        )
+        return asvc.obtener_datos_explorar(region_seleccionada=region)
+    datos, error = _intentar(cargar)
+    return render_template("explorar.html", activo="explorar", d=datos, error_bd=error)
+
+
+@bp.route("/alertas")
+def alertas():
+    def cargar():
+        from app.services import analytics_service as asvc
+        asvc.registrar_acceso(pantalla="Alertas", usuario="gerencia", rol="Gerencia general")
+        return asvc.obtener_datos_alertas()
+    datos, error = _intentar(cargar)
+    return render_template("alertas.html", activo="alertas", d=datos, error_bd=error)
+
+
+@bp.route("/accesos")
+def accesos():
+    def cargar():
+        from app.services import analytics_service as asvc
+        asvc.registrar_acceso(pantalla="Accesos", usuario="auditor1", rol="Auditor")
+        return asvc.obtener_datos_accesos()
+    datos, error = _intentar(cargar)
+    return render_template("accesos.html", activo="accesos", d=datos, error_bd=error)
+

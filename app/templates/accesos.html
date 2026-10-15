@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block titulo_pagina %}Accesos por rol · MotoExpres BI{% endblock %}
+{% block titulo %}Accesos por rol{% endblock %}
+{% block migas %}MotoExpres BI · Hito 2 · Lo funcional (E10){% endblock %}
+
+{% block contenido %}
+<!-- Banner Nota del Curso -->
+<div id="banner-notas-curso" class="banner banner-curso">
+  <span class="banner-tag">Hito 2 · E10</span>
+  <span>
+    Seguridad por roles: cada quien ve lo que le corresponde. Pruebe el selector "Ver como" arriba y vuelva al Tablero.
+    Recuerde lo del E10: el filtro de filas no protege un archivo que se envía por correo, ni oculta columnas.
+  </span>
+</div>
+
+<!-- Panel Superior: Roles del sistema -->
+<div class="panel" style="margin-top: 18px;">
+  <div class="panel-cabecera">
+    <div>
+      <h3>Roles del sistema</h3>
+      <p class="sub">Definidos en la base de datos, no en el tablero</p>
+    </div>
+  </div>
+
+  <table class="tabla tabla-roles">
+    <thead>
+      <tr>
+        <th>ROL</th>
+        <th>PANTALLAS</th>
+        <th>DATOS</th>
+        <th>REGLA DE FILTRO</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in d.roles %}
+      <tr>
+        <td><strong>{{ r.rol }}</strong></td>
+        <td>{{ r.pantallas }}</td>
+        <td>{{ r.datos }}</td>
+        <td class="mono" style="color: {{ 'var(--teal)' if r.regla_filtro != '—' else 'var(--tenue)' }};">{{ r.regla_filtro }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Nivel Inferior: Prueba rápida y Registro de accesos -->
+<div class="rejilla-2" style="margin-top: 18px;">
+  <!-- Panel Prueba rápida -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Prueba rápida</h3>
+        <p class="sub">Lo que cada rol ve como total</p>
+      </div>
+    </div>
+
+    <table class="tabla tabla-prueba-rapida">
+      <thead>
+        <tr>
+          <th>VER COMO</th>
+          <th class="num">INGRESOS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in d.prueba_rapida %}
+        <tr>
+          <td>{{ row.ver_como }}</td>
+          <td class="mono num">{{ row.ingresos }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="border-top: 2px solid var(--borde); font-weight: 700; background: rgba(255,255,255,0.02);">
+          <td>Suma de las {{ d.total_regiones }} regiones</td>
+          <td class="mono num" style="color: #fff; font-size:15px;">{{ d.suma_total }}</td>
+        </tr>
+      </tfoot>
+    </table>
+    <p class="nota">Las {{ d.total_regiones }} regiones suman el total de la gerencia: el filtro no pierde ni repite filas.</p>
+  </div>
+
+  <!-- Panel Registro de accesos -->
+  <div class="panel">
+    <div class="panel-cabecera">
+      <div>
+        <h3>Registro de accesos</h3>
+        <p class="sub">Quién entró y qué vio</p>
+      </div>
+    </div>
+
+    <div class="consola-accesos mono">
+      {% for reg in d.registro_accesos %}
+      <div class="linea-acceso">
+        <span class="acceso-hora">{{ reg.hora }}</span>
+        <span class="acceso-usuario">{{ reg.usuario }}</span>
+        <span class="acceso-rol">{{ reg.rol }}</span>
+        <span class="acceso-pantalla">{{ reg.pantalla }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.MotoAnalytics) {
+      window.MotoAnalytics.initAccesosExacto();
+    }
+  });
+</script>
+{% endblock %}
